@@ -1,0 +1,14 @@
+
+*.log
+
+\.idea/
+
+argparse
+
+logging
+
+rospy
+
+sys
+
+*.pyc

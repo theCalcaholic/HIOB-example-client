@@ -10,13 +10,14 @@ import sys
 from hiob_msgs.msg import Rect
 from hiob_example_client.msg import FrameWithGroundTruth
 
+
 class NicoRosVision():
     """
     The NicoRosVision class exposes a camera stream over ROS
     """
 
     @staticmethod
-    def getConfig():
+    def get_config():
         """
         Returns a default config dict
 
@@ -30,7 +31,7 @@ class NicoRosVision():
             'rostopicName': '/nico/vision'
         }
 
-    def __init__(self, config = None):
+    def __init__(self, callback=None, config=None):
         """
         The NicoRosVision enables the sending of a camera image through ROS
 
@@ -41,11 +42,13 @@ class NicoRosVision():
         self._stream_running = False
         self._config = config
         if config is None:
-            self._config = NicoRosVision.getConfig()
+            self._config = NicoRosVision.get_config()
         self._bridge = cv_bridge.CvBridge()
+        self._external_callback = callback
+        self.initial_position = None
+        self.transmitting_pos = 0
 
         logging.info('-- Init NicoRosMotion --')
-        rospy.init_node('nicorosvision', anonymous=True)
 
         logging.debug('Init ROS publisher')
         self._publisher = rospy.Publisher(self._config['rostopicName'] + '/videoStream', FrameWithGroundTruth, queue_size = 1)
@@ -53,12 +56,9 @@ class NicoRosVision():
         logging.info('-- All done --')
         pass
 
-    def startStream(self):
-        """
-        Starts the stream
-        """
-        if self._stream_running:
-            logging.warning('Stream already running')
+    def connect_device(self):
+        if self._device is not None:
+            logging.warning('A video device is already connected')
             return
         self._device = nicovision.VideoDevice.VideoDevice.fromDevice(self._config['device'])
         if self._device is None:
@@ -68,20 +68,37 @@ class NicoRosVision():
         self._device.setFrameRate(self._config['framerate'])
         self._device.setResolution(self._config['width'], self._config['height'])
         self._device.open()
-        self._stream_running = True
 
-    def stopStream(self):
-        """
-        Stops the stream
-        """
-        if not self._stream_running:
-            logging.warning('Stream not running')
+    def disconnect_device(self):
+        if self._device is None:
+            logging.warning('No video device connected')
             return
         self._device.close()
         self._device = None
+
+    def start_stream(self):
+        """
+        Starts the stream
+        """
+        if self._device is None:
+            self.connect_device()
+        if self._stream_running:
+            logging.warning('Stream already running')
+            return
+        self.transmitting_pos = 10
+        self._stream_running = True
+
+    def stop_stream(self):
+        """
+        Stops the stream
+        """
+        self.disconnect_device()
+        if not self._stream_running:
+            logging.warning('Stream not running')
+            return
         self._stream_running = False
 
-    def isRunning(self):
+    def is_running(self):
         """
         Returns true if stream is currently running
 
@@ -97,15 +114,24 @@ class NicoRosVision():
         :param rval: rval
         :param frame: frame
         """
-        if frame is not None:
+        if frame is None:
+            return
+
+        if self._external_callback is not None:
+            self._external_callback(frame)
+
+        if self._stream_running:
             compressed_img = self._bridge.cv2_to_compressed_imgmsg(frame, 'png')
             ground_truth = Rect(0, 0, 40, 40)
+            if self.initial_position and self.transmitting_pos > 0:
+                ground_truth = self.initial_position
+                self.transmitting_pos -= 1
             msg = FrameWithGroundTruth(compressed_img, ground_truth, False)
             self._publisher.publish(msg)
 
 
 if __name__ == '__main__':
-    config = NicoRosVision.getConfig()
+    config = NicoRosVision.get_config()
 
     parser = argparse.ArgumentParser(description='NICO ROS vision interface')
     parser.add_argument('--log-level', dest='logLevel', help='Sets log level. Default: INFO', type=str, default='INFO')
@@ -157,8 +183,9 @@ if __name__ == '__main__':
     stdoutHandler.setFormatter(logging_format)
     logging.getLogger().addHandler(stdoutHandler)
 
+    rospy.init_node('hiob_example_client', anonymous=True)
     vision = NicoRosVision(config)
 
-    vision.startStream()
+    vision.start_stream()
     rospy.spin()
-    vision.stopStream()
+    vision.stop_stream()
