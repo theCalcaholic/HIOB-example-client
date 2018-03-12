@@ -1,5 +1,5 @@
 import rospy
-import hiob_ros.msg
+import hiob_msgs.msg
 
 
 class TrackingSubscriber:
@@ -11,7 +11,7 @@ class TrackingSubscriber:
     def start(self):
         self.running = True
         print "subscribing..."
-        rospy.Subscriber('/hiob/objects/0', hiob_ros.msg.TrackingResult, self.receive_message)
+        rospy.Subscriber('/hiob/objects/0', hiob_msgs.msg.TrackingResult, self.receive_message)
 
     def receive_message(self, tracking_result):
         #print """received result:
