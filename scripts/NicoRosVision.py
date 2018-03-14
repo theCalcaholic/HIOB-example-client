@@ -8,7 +8,7 @@ import cv_bridge
 import nicovision.VideoDevice
 import sys
 from hiob_msgs.msg import Rect
-from hiob_example_client.msg import FrameWithGroundTruth
+from hiob_msgs.msg import FrameWithGroundTruth
 
 
 class NicoRosVision():

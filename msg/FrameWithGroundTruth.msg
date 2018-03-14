@@ -1,3 +1,0 @@
-sensor_msgs/CompressedImage frame
-hiob_msgs/Rect groundTruth
-bool lastImage
