@@ -17,6 +17,7 @@ class VideoStream(QLabel):
         self.cursor_position = QPoint(0, 0)
         self.setMouseTracking(True)
         self.object_pos = None
+        #self.max_size = None if max_width is None or max_height is None else (max_width, max_height)
         #self.resize(400, 400)
         #self.frame_received.connect(self.load_frame)
         self.image = None
@@ -24,7 +25,16 @@ class VideoStream(QLabel):
     def load_frame(self, frame):
         cv2.cvtColor(frame, cv2.COLOR_BGR2RGB, frame)
         self.image = QImage(frame, frame.shape[1], frame.shape[0], frame.shape[1] * 3, QImage.Format_RGB888)
-        self.resize(self.image.width(), self.image.height())
+        w = self.frameGeometry().width()
+        h = self.frameGeometry().height()
+        i_w = self.image.width()
+        i_h = self.image.height()
+        if float(w) / i_w < float(h) / i_h:
+            self.image = self.image.scaledToWidth(w)
+        else:
+            self.image = self.image.scaledToHeight(h)
+
+        #self.resize(self.image.width(), self.image.height())
         #pixmap = QPixmap(self.image)
         #self.setPixmap(pixmap)
         self.update()

@@ -1,9 +1,7 @@
-import numpy as np
-from PyQt5.QtWidgets import QApplication, QDialog, QTextEdit, QGridLayout, QWidget, QLabel, QPushButton
-from PyQt5.QtGui import QImage, QPainter, QColor, QPen, QCursor, QGuiApplication, QPixmap
-from PyQt5.QtCore import QTimer, QPoint, Qt, QRunnable, QThreadPool, pyqtSignal, QThread
-from scripts.ui import VideoStream, LogOutput
-from scripts.RosWorker import RosWorker
+from PyQt5.QtWidgets import QGridLayout, QWidget
+from PyQt5.QtCore import pyqtSignal, QThread
+from . import VideoStream, LogOutput
+from ros.RosWorker import RosWorker
 
 
 class App(QWidget):
@@ -16,7 +14,10 @@ class App(QWidget):
         self.setWindowTitle(self.title)
 
         self.stream_widget = VideoStream(self)
+        self.stream_widget.setMinimumWidth(400)
+        self.stream_widget.setMinimumHeight(300)
         self.console = LogOutput(self)
+        self.console.setFixedHeight(200)
         #btn = QPushButton("Start", self)
         #self.settings_widget = SettingsPane(self)
 

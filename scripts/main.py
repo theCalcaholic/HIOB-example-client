@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import sys
-from PyQt5.QtWidgets import QApplication, QDialog, QTextEdit, QGridLayout, QWidget, QLabel, QPushButton
+from PyQt5.QtWidgets import QApplication
 from ui import App
 
 if __name__ == "__main__":
