@@ -6,9 +6,15 @@ import rospy
 import sensor_msgs.msg
 import cv_bridge
 import nicovision.VideoDevice
+import cv2
 import sys
 from hiob_msgs.msg import Rect
 from hiob_msgs.msg import FrameWithGroundTruth
+from PIL import Image
+import io
+import time
+
+print("OpenCV version: {}".format(cv2.__version__))
 
 
 class NicoRosVision():
@@ -25,7 +31,7 @@ class NicoRosVision():
         """
         return {
             'device': '',
-            'framerate': 20,
+            'framerate': 30,
             'width': 640,
             'height': 480,
             'rostopicName': '/nico/vision'
@@ -47,6 +53,7 @@ class NicoRosVision():
         self._external_callback = callback
         self.initial_position = None
         self.transmitting_pos = 0
+        self.frame_count = 0
 
         logging.info('-- Init NicoRosMotion --')
 
@@ -65,7 +72,7 @@ class NicoRosVision():
             logging.error('Can not initialise device - is the device name correct and not ambiguous?')
             return
         self._device.addCallback(self._callback)
-        self._device.setFrameRate(self._config['framerate'])
+        #self._device.setFrameRate(self._config['framerate'])
         self._device.setResolution(self._config['width'], self._config['height'])
         self._device.open()
 
@@ -117,16 +124,28 @@ class NicoRosVision():
         if frame is None:
             return
 
+        self.frame_count += 1
         if self._external_callback is not None:
             self._external_callback(frame)
 
         if self._stream_running:
-            compressed_img = self._bridge.cv2_to_compressed_imgmsg(frame, 'png')
+            cmd = ''
+            #compressed_img = self._bridge.cv2_to_compressed_imgmsg(frame, 'png')
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            compressed_img = self._bridge.cv2_to_imgmsg(frame, encoding='rgb8')
+            """test = Image.frombytes("RGB", (compressed_img.width, compressed_img.height), compressed_img.data)
+
+            if test.mode != "RGB":
+                print("NOT RGB!")
+                test = test.convert("RGB")
+            test.show()
+            time.sleep(3.0)"""
             ground_truth = Rect(0, 0, 40, 40)
             if self.initial_position and self.transmitting_pos > 0:
                 ground_truth = self.initial_position
+                cmd = 'start'
                 self.transmitting_pos -= 1
-            msg = FrameWithGroundTruth(compressed_img, ground_truth, False)
+            msg = FrameWithGroundTruth(compressed_img, cmd, ground_truth, "{}".format(self.frame_count))
             self._publisher.publish(msg)
 
 
