@@ -1,6 +1,7 @@
-from PyQt5.QtWidgets import QGridLayout, QWidget
-from PyQt5.QtCore import pyqtSignal, QThread
+from PyQt5.QtWidgets import QGridLayout, QWidget, QAbstractScrollArea
+from PyQt5.QtCore import pyqtSignal, QThread, Qt
 from . import VideoStream, LogOutput
+from SettingsPane import SettingsPane
 from ros.RosWorker import RosWorker
 
 
@@ -18,12 +19,14 @@ class App(QWidget):
         self.stream_widget.setMinimumHeight(300)
         self.console = LogOutput(self)
         self.console.setFixedHeight(200)
+        #self.console.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
         #btn = QPushButton("Start", self)
-        #self.settings_widget = SettingsPane(self)
+        self.settings_widget = SettingsPane(self)
 
         grid = QGridLayout()
-        #grid.addWidget(self.settings_widget, 0, 0, 3, 2)
-        grid.addWidget(self.stream_widget, 0, 0, 3, 4)
+        #grid.setAlignment(Qt.AlignHCenter)
+        grid.addWidget(self.settings_widget, 0, 0, 1, 4)
+        grid.addWidget(self.stream_widget, 1, 0, 3, 4)
         grid.addWidget(self.console, 4, 0, 1, 4)
         self.setLayout(grid)
         self.resize(600, 600)
