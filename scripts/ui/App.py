@@ -62,6 +62,9 @@ class App(QWidget):
     def start_stream(self, pos):
         self.ros_service.start_streaming(pos)
 
+    def toggle_pause_stream(self):
+        self.ros_service.streaming_toggle_paused()
+
     def closeEvent(self, event):
         #QThreadPool.globalInstance().cancel(self.ros_service)
         self.worker_thread.exit()

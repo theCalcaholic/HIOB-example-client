@@ -54,6 +54,7 @@ class NicoRosVision():
         self.initial_position = None
         self.transmitting_pos = 0
         self.frame_count = 0
+        self.paused = False
 
         logging.info('-- Init NicoRosMotion --')
 
@@ -128,7 +129,7 @@ class NicoRosVision():
         if self._external_callback is not None:
             self._external_callback(frame)
 
-        if self._stream_running:
+        if self._stream_running and not self.paused:
             cmd = ''
             #compressed_img = self._bridge.cv2_to_compressed_imgmsg(frame, 'png')
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)

@@ -51,6 +51,18 @@ class RosWorker(QObject):
 
         return NicoRosVision(self.video_callback, config)
 
+    def streaming_set_paused(self, pause):
+        if self.vision_service is None:
+            raise Exception("You must start the video stream first!")
+        self.vision_service.paused = pause
+
+    def streaming_toggle_paused(self):
+        print("toggle paused")
+        if self.vision_service is None:
+            raise Exception("You must start the video stream first!")
+        self.vision_service.paused = not self.vision_service.paused
+
+
     @pyqtSlot(object)
     def start_streaming(self, pos):
         print "starting stream"
