@@ -17,8 +17,6 @@ from hiob_msgs.msg import FrameWithGroundTruth
 import threading
 import time
 
-print("OpenCV version: {}".format(cv2.__version__))
-
 
 class CameraVision():
     """
