@@ -9,7 +9,7 @@ from PyQt5.QtCore import QRunnable, QMetaObject, Qt, Q_ARG, pyqtSignal, QThread,
 from hiob_msgs.msg import TrackingResult
 import numpy
 
-from NicoRosVision import CameraVision
+from CameraVision import CameraVision
 from TrackingSubscriber import TrackingSubscriber
 
 
