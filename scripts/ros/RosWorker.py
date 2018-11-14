@@ -136,7 +136,8 @@ class RosWorker(QObject):
         self.vision_service = self.get_video_service(args)
 
         self.subscriber.start()
-        self.vision_service.connect_device()
+        #self.vision_service.connect_device()
+        self.vision_service.start_capture()
         rospy.spin()
         self.vision_service.stop_stream()
         self.subscriber.stop()

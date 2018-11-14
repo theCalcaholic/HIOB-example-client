@@ -1,15 +1,16 @@
 #!/usr/bin/env python
 
+import os
 import logging
 import argparse
 import rospy
 import sensor_msgs.msg
 import cv_bridge
-import nicovision.VideoDevice
 import cv2
 import sys
 from hiob_msgs.msg import Rect
 from hiob_msgs.msg import FrameWithGroundTruth
+import threading
 from PIL import Image
 import io
 import time
@@ -34,7 +35,7 @@ class NicoRosVision():
             'framerate': 30,
             'width': 640,
             'height': 480,
-            'rostopicName': '/nico/vision'
+            'rostopicName': '/hiob_client'
         }
 
     def __init__(self, callback=None, config=None):
@@ -44,8 +45,10 @@ class NicoRosVision():
         :param config: Configuration dict
         :type config: dict
         """
-        self._device = None
+        #self._device = None
+        self._capture = None
         self._stream_running = False
+        self._capture_running = False
         self._config = config
         if config is None:
             self._config = NicoRosVision.get_config()
@@ -54,7 +57,7 @@ class NicoRosVision():
         self.initial_position = None
         self.transmitting_pos = 0
         self.frame_count = 0
-        self.paused = False
+        self.paused = True
 
         logging.info('-- Init NicoRosMotion --')
 
@@ -64,43 +67,102 @@ class NicoRosVision():
         logging.info('-- All done --')
         pass
 
-    def connect_device(self):
-        if self._device is not None:
-            logging.warning('A video device is already connected')
-            return
-        self._device = nicovision.VideoDevice.VideoDevice.fromDevice(self._config['device'])
-        if self._device is None:
+    @classmethod
+    def find_device_id(self, device=''):
+        device_path = '/dev/v4l/by-id/'
+        if not os.path.isdir(device_path):
+            logging.error('Video device device does not exists!')
+            return -1
+
+        candidates = []
+        for dev_file in os.listdir(device_path):
+            if device in dev_file:
+                candidates += [dev_file]
+
+        if len(candidates) is 0:
+            logging.error('No candidates found')
+            return -1
+        elif len(candidates) > 1:
+            logging.error('Multiple candidates found: {}'.format(candidates))
+            return -1
+
+        return int(os.readlink(device_path + candidates[0])[-1:])
+
+    def open_camera(self, device_id=-1, framerate=20, width=640, height=480):
+        if device_id == -1:
+            raise Exception("ERROR: Camera could not be opened! Invalid device id!")
+        self._capture = cv2.VideoCapture(device_id)
+        self._capture.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+        self._capture.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+        self._capture.set(cv2.CAP_PROP_FPS, framerate)
+        self._capture.open(device_id)
+
+        #self._running = True
+        #self._open = True
+
+    def capture_routine(self):
+        while self._capture_running:
+            rval, frame = self._capture.read()
+            self._callback(rval, frame)
+            time.sleep(1.0 / self._config['framerate'])
+
+    """def connect_device(self):
+        # if self._device_id != -1:
+        #    logging.warning('A video device is already connected')
+        #    return
+        #self._device = nicovision.VideoDevice.VideoDevice.fromDevice(self._config['device'])
+        device_id = self.__class__.find_device_id()
+        if device_id == -1:
             logging.error('Can not initialise device - is the device name correct and not ambiguous?')
             return
-        self._device.addCallback(self._callback)
+        #self._device.addCallback(self._callback)
         #self._device.setFrameRate(self._config['framerate'])
-        self._device.setResolution(self._config['width'], self._config['height'])
-        self._device.open()
+        #self._device.setResolution(self._config['width'], self._config['height'])
+        #self._device.open()
+        #self.open_camera(self._device_id, width=self._config['width'], height=self._config['height'])
+    """
 
-    def disconnect_device(self):
-        if self._device is None:
-            logging.warning('No video device connected')
+    def close_device(self):
+        #if self._device is None:
+        #    logging.warning('No video device connected')
+        #    return
+        self._thread.join()
+        self._capture.release()
+        self._capture = None
+        #self._device.close()
+        #self._device = None
+
+    def start_capture(self):
+        """
+        Starts image capture
+        """
+        if self._capture_running:
+            logging.warning('Capture already running')
             return
-        self._device.close()
-        self._device = None
+
+        device_id = self.__class__.find_device_id()
+        if device_id == -1:
+            logging.error('Can not initialise device - is the device name correct and not ambiguous?')
+            return
+        self.open_camera(device_id, framerate=self._config['framerate'],
+                         width=self._config['width'], height=self._config['height'])
+        self._capture_running = True
+        self._thread = threading.Thread(target=self.capture_routine)
+        self._thread.start()
+
+        self.transmitting_pos = 10
 
     def start_stream(self):
-        """
-        Starts the stream
-        """
-        if self._device is None:
-            self.connect_device()
         if self._stream_running:
             logging.warning('Stream already running')
             return
-        self.transmitting_pos = 10
         self._stream_running = True
 
     def stop_stream(self):
         """
         Stops the stream
         """
-        self.disconnect_device()
+        self.close_device()
         if not self._stream_running:
             logging.warning('Stream not running')
             return
