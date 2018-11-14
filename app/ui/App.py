@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QGridLayout, QWidget, QAbstractScrollArea
 from PyQt5.QtCore import pyqtSignal, QThread, Qt
 from . import VideoStream, LogOutput
 from SettingsPane import SettingsPane
-from ros.RosWorker import RosWorker
+from app.ros import RosWorker
 
 
 class App(QWidget):
