@@ -9,7 +9,7 @@ from PyQt5.QtCore import QRunnable, QMetaObject, Qt, Q_ARG, pyqtSignal, QThread,
 from hiob_msgs.msg import TrackingResult
 import numpy
 
-from NicoRosVision import NicoRosVision
+from NicoRosVision import CameraVision
 from TrackingSubscriber import TrackingSubscriber
 
 
@@ -35,7 +35,7 @@ class RosWorker(QObject):
         return TrackingSubscriber(self.position_callback)
 
     def get_video_service(self, args):
-        config = NicoRosVision.get_config()
+        config = CameraVision.get_config()
 
         # Parse args
         if args.device:
@@ -49,7 +49,7 @@ class RosWorker(QObject):
         if args.rostopicName:
             config['rostopicName'] = args.rostopicName
 
-        return NicoRosVision(self.video_callback, config)
+        return CameraVision(self.video_callback, config)
 
     def streaming_set_paused(self, pause):
         if self.vision_service is None:
@@ -90,7 +90,7 @@ class RosWorker(QObject):
 
     @pyqtSlot()
     def start_work(self):
-        video_config = NicoRosVision.get_config()
+        video_config = CameraVision.get_config()
         parser = argparse.ArgumentParser(description='NICO ROS vision interface')
         parser.add_argument('--log-level', dest='logLevel', help='Sets log level. Default: INFO', type=str, default='INFO')
         parser.add_argument('--log-file', dest='logFile', help='Path to log file. Default: NICO_VISION.log', type=str,
