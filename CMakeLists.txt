@@ -11,7 +11,6 @@ find_package(catkin REQUIRED COMPONENTS
   hiob_msgs
   message_generation
   rospy
-  cv_bridge
 )
 
 ## System dependencies are found with CMake's conventions
@@ -110,7 +109,7 @@ catkin_package(
 #  LIBRARIES hiob_example_client
 #  CATKIN_DEPENDS hiob_msgs message_generation rospy sensor_msgs
 #  DEPENDS system_lib
-    CATKIN_DEPENDS message_runtime
+#  CATKIN_DEPENDS message_runtime
 )
 
 ###########

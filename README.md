@@ -11,7 +11,6 @@ in order to use it._
 
 ## Requirements
 - Python 2
-- PyQt5 (e.g. installed by `apt install python-pyqt5` on Debian based distributions)
 - ROS (Kinetic or above)
 - hiob_msgs (see [**Installation**](#installation) section)
 
@@ -27,19 +26,20 @@ the client might likely be compatible with other operating systems as well, if t
     ```sh
     . /opt/ros/kinetic/setup.bash
     ```
-2. Create or reuse a directory for a ROS workspace and change to it, e.g.:
+2. Create or reuse a directory for a ROS workspace, e.g.:
     ```sh
-    mkdir my_ros_ws
-    cd my_ros_ws
+    mkdir -p my_ros_ws/src
     ```
 3. Clone this repository and dependencies into an 'src' directory inside the created workspace:
     ```sh
-    mkdir src
-    cd src
-    git clone https://github.com/theCalcaholic/hiob_example_client.git
-    git clone https://github.com/theCalcaholic/hiob_msgs.git
+    git clone https://github.com/theCalcaholic/hiob_example_client.git src/hiob_example_client
+    git clone https://github.com/theCalcaholic/hiob_msgs.git src/hiob_msgs
     ```
-4. Install the ROS packages with catkin:
+4. Install dependencies of packages in the created workspace, e.g. (Replace 'kinetic' by your ros distro):
+    ```sh
+    rosdep install --from-paths src --ignore-src --rosdistro kinetic
+    ```
+5. Install the ROS packages with catkin (from your ros workspace root directory):
     ```sh
     catkin_make install
     ```
