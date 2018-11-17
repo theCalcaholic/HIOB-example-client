@@ -37,6 +37,8 @@ the client might likely be compatible with other operating systems as well, if t
     ```
 4. Install dependencies of packages in the created workspace, e.g.:
     ```sh
+    rosdep init
+    rosdep update
     rosdep install --from-paths src --ignore-src --rosdistro kinetic
     ```
     __Note:__ _Replace 'kinetic' by your ROS distro._
