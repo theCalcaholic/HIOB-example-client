@@ -35,7 +35,7 @@ the client might likely be compatible with other operating systems as well, if t
     git clone https://github.com/theCalcaholic/hiob_example_client.git src/hiob_example_client
     git clone https://github.com/theCalcaholic/hiob_msgs.git           src/hiob_msgs
     ```
-4. Install dependencies of packages in the created workspace, e.g. (Replace 'kinetic' by your ros distro):
+4. Install dependencies of packages in the created workspace, e.g. (replace 'kinetic' by your ros distro):
     ```sh
     rosdep install --from-paths src --ignore-src --rosdistro kinetic
     ```
@@ -48,7 +48,7 @@ the client might likely be compatible with other operating systems as well, if t
 
 _This section assumes that you have followed the steps in the [**Installation**](#installation) section carefully._
 
-If so, you should be able these steps in order to run HIOB:
+If so, you should be able to perform these steps in order to run the HIOB client:
 
 1. Source the ROS setup script of the ROS distro e.g.:
     ```sh
