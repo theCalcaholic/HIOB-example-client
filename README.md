@@ -33,7 +33,7 @@ the client might likely be compatible with other operating systems as well, if t
 3. Clone this repository and dependencies into an 'src' directory inside the created workspace:
     ```sh
     git clone https://github.com/theCalcaholic/hiob_example_client.git src/hiob_example_client
-    git clone https://github.com/theCalcaholic/hiob_msgs.git src/hiob_msgs
+    git clone https://github.com/theCalcaholic/hiob_msgs.git           src/hiob_msgs
     ```
 4. Install dependencies of packages in the created workspace, e.g. (Replace 'kinetic' by your ros distro):
     ```sh
