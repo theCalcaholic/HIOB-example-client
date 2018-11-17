@@ -11,7 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   hiob_msgs
   message_generation
   rospy
-  OpenCV
+  cv_bridge
 )
 
 ## System dependencies are found with CMake's conventions
