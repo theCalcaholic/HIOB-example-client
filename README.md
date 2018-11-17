@@ -35,10 +35,11 @@ the client might likely be compatible with other operating systems as well, if t
     git clone https://github.com/theCalcaholic/hiob_example_client.git src/hiob_example_client
     git clone https://github.com/theCalcaholic/hiob_msgs.git           src/hiob_msgs
     ```
-4. Install dependencies of packages in the created workspace, e.g. (replace 'kinetic' by your ros distro):
+4. Install dependencies of packages in the created workspace, e.g.:
     ```sh
     rosdep install --from-paths src --ignore-src --rosdistro kinetic
     ```
+    __Note:__ _Replace 'kinetic' by your ROS distro._
 5. Install the ROS packages with catkin (from your ros workspace root directory):
     ```sh
     catkin_make install

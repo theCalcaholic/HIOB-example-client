@@ -9,7 +9,6 @@ project(hiob_example_client)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   hiob_msgs
-  message_generation
   rospy
 )
 
