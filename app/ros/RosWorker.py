@@ -21,7 +21,6 @@ class RosWorker(QObject):
     def __init__(self, parent=None):
         #super(RosThread, self).__init__(self)
         QObject.__init__(self, parent)
-        rospy.init_node('hiob_example_client', anonymous=True)
         self.subscriber = None
         self.vision_service = None
 
@@ -53,20 +52,22 @@ class RosWorker(QObject):
 
     def streaming_set_paused(self, pause):
         if self.vision_service is None:
-            raise Exception("You must start the video stream first!")
+            print "WARN: You must start the video stream first!"
+            return
         self.vision_service.paused = pause
 
     def streaming_toggle_paused(self):
-        print("toggle paused")
         if self.vision_service is None:
-            raise Exception("You must start the video stream first!")
-        self.vision_service.paused = not self.vision_service.paused
+            print "WARN: You must start the video stream first!"
+            return
+        self.streaming_set_paused(not self.vision_service.paused)
 
 
     @pyqtSlot(object)
     def start_streaming(self, pos):
         print "starting stream"
         self.vision_service.initial_position = pos
+        self.streaming_set_paused(False)
         self.vision_service.start_stream()
 
     def video_callback(self, frame):
@@ -90,6 +91,7 @@ class RosWorker(QObject):
 
     @pyqtSlot()
     def start_work(self):
+        rospy.init_node('hiob_example_client', anonymous=True, disable_signals=True)
         video_config = CameraVision.get_config()
         parser = argparse.ArgumentParser(description='NICO ROS vision interface')
         parser.add_argument('--log-level', dest='logLevel', help='Sets log level. Default: INFO', type=str, default='INFO')
@@ -134,6 +136,7 @@ class RosWorker(QObject):
 
         self.subscriber = self.get_subscriber()
         self.vision_service = self.get_video_service(args)
+        self.vision_service.start_up()
 
         self.subscriber.start()
         #self.vision_service.connect_device()

@@ -60,13 +60,14 @@ class CameraVision():
         self.frame_count = 0
         self.paused = True
 
-        logging.info('-- Init NicoRosMotion --')
+    def start_up(self):
+
+        logging.info('-- Init CameraVision --')
 
         logging.debug('Init ROS publisher')
         self._publisher = rospy.Publisher(self._config['rostopicName'] + '/videoStream', FrameWithGroundTruth, queue_size = 1)
 
         logging.info('-- All done --')
-        pass
 
     @classmethod
     def find_device_id(cls, device='', allow_any=True):

@@ -1,8 +1,10 @@
-from PyQt5.QtWidgets import QGridLayout, QWidget, QAbstractScrollArea
+from PyQt5.QtWidgets import QGridLayout, QWidget, QAbstractScrollArea, QVBoxLayout, QHBoxLayout
 from PyQt5.QtCore import pyqtSignal, QThread, Qt
 from . import VideoStream, LogOutput
 from SettingsPane import SettingsPane
 from app.ros import RosWorker
+from threading import Timer
+import rospy
 
 
 class App(QWidget):
@@ -15,19 +17,31 @@ class App(QWidget):
         self.setWindowTitle(self.title)
 
         self.stream_widget = VideoStream(self)
-        self.stream_widget.setMinimumWidth(400)
-        self.stream_widget.setMinimumHeight(300)
         self.console = LogOutput(self)
         self.console.setFixedHeight(200)
         #self.console.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
         #btn = QPushButton("Start", self)
         self.settings_widget = SettingsPane(self)
 
+
         grid = QGridLayout()
         #grid.setAlignment(Qt.AlignHCenter)
-        grid.addWidget(self.settings_widget, 0, 0, 1, 4)
-        grid.addWidget(self.stream_widget, 1, 0, 3, 4)
-        grid.addWidget(self.console, 4, 0, 1, 4)
+        grid.addWidget(self.settings_widget, 0, 0, 1, 2)
+        grid.addWidget(self.stream_widget, 1, 1, 1, 1)
+        grid.addWidget(self.console, 2, 0, 1, 2)
+        grid.setRowMinimumHeight(0, 40)
+        grid.setColumnMinimumWidth(0, 120)
+        grid.setColumnStretch(0, 0)
+        grid.setRowStretch(0, 0)
+        grid.setRowStretch(1, 1)
+        grid.setRowStretch(2, 0)
+
+        #tracker_column = QVBoxLayout()
+
+        #layout = QHBoxLayout()
+        #layout.addChildLayout(tracker_column)
+        #layout.addChildLayout(grid)
+
         self.setLayout(grid)
         self.resize(600, 600)
 
@@ -36,7 +50,6 @@ class App(QWidget):
         self.worker_thread = QThread()
         self.ros_service.moveToThread(self.worker_thread)
         self.worker_thread.started.connect(self.ros_service.start_work)
-        self.worker_thread.start()
 
         self.ros_service.frame_received.connect(self.stream_widget.load_frame)
         self.ros_service.position_received.connect(self.receive_tracking)
@@ -51,6 +64,15 @@ class App(QWidget):
         #QThreadPool.globalInstance().start(self.ros_service)
 
         self.show()
+        self.worker_thread.start()
+        rospy.on_shutdown(self.close_app)
+        #self.start_ros()
+
+    def close_app(self):
+        print("closing1...")
+        self.worker_thread.exit()
+        print("closing2...")
+        rospy.signal_shutdown("App exiting...")
 
     def receive_tracking(self, tracking_result):
         self.console.append("""received result:
@@ -67,5 +89,5 @@ class App(QWidget):
 
     def closeEvent(self, event):
         #QThreadPool.globalInstance().cancel(self.ros_service)
-        self.worker_thread.exit()
         event.accept()
+        self.close_app()
